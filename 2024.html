@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET Exam Practice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .option:hover {
+            background-color: #e0f2fe;
+        }
+        .selected {
+            background-color: #bfdbfe;
+            border-color: #3b82f6;
+        }
+        .correct-answer {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .wrong-answer {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .review-btn.active {
+            color: #f59e0b;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            /* On small screens, hide side panels by default */
+            .sidebar, .review-panel {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-sky-500 text-white py-4 px-6 shadow-md">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 class="text-2xl font-bold text-center flex-1">NEET Exam Practice</h1>
+            <div id="timer" class="flex items-center bg-blue-800 px-4 py-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>03:00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto p-4">
+        <!-- Left Panel - Instructions -->
+        <aside id="instructions-panel" class="bg-white p-6 rounded-lg shadow-md md:col-span-1">
+            <h2 class="text-2xl font-bold text-blue-800 mb-4">NEET Examination Instructions</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+                <li>The test consists of Multiple Choice Questions (MCQs).</li>
+                <li>Each question has 4 options, only one of which is correct.</li>
+                <li>For each correct answer, 4 marks will be awarded.</li>
+                <li>For each incorrect answer, 1 mark will be deducted.</li>
+                <li>No marks will be deducted for unattempted questions.</li>
+                <li>The total duration of the exam is 3 hours.</li>
+                <li>You can navigate between questions using 'Previous' and 'Next' buttons.</li>
+                <li>You can mark questions for review and revisit them later.</li>
+                <li>The timer will continue to run even if you pause the exam.</li>
+                <li>Click 'Submit Test' to end the examination and view your results.</li>
+            </ul>
+            <button id="start-examination-btn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition">
+                Start Examination
+            </button>
+        </aside>
+
+        <!-- Center Panel - Question View -->
+        <!-- Changed md:col-span-1 to md:col-span-2 to make it wider -->
+        <main class="question-area bg-white p-6 rounded-lg shadow-md md:col-span-2 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-number" class="font-medium text-blue-800">Question 1 of 180</span>
+                <button id="review-btn" class="text-gray-500 hover:text-yellow-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    <span class="ml-1">Mark for Review</span>
+                </button>
+            </div>
+
+            <div id="question-text" class="mb-6 text-gray-800">
+                <!-- Question text will be loaded here -->
+            </div>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options will be loaded here -->
+            </div>
+
+            <div id="feedback" class="hidden mt-4 p-3 rounded-lg">
+                <div class="flex items-center space-x-2">
+                    <span id="feedback-icon"></span>
+                    <span id="feedback-text" class="font-medium"></span>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition flex items-center disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                </button>
+                <button id="pause-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pause Exam
+                </button>
+                <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Panel - Review Navigation -->
+        <aside class="review-panel bg-white p-4 rounded-lg shadow-md md:col-span-1 hidden">
+            <h2 class="text-lg font-semibold text-blue-800 mb-4">Question Status</h2>
+            <div class="grid grid-cols-5 gap-2 mb-6">
+                <div class="bg-blue-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-blue-800" id="total-questions">0</div>
+                    <div class="text-sm text-blue-600">Total</div>
+                </div>
+                <div class="bg-green-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-800" id="attempted-count">0</div>
+                    <div class="text-sm text-green-600">Attempted</div>
+                </div>
+                <div class="bg-gray-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-gray-800" id="unattempted-count">0</div>
+                    <div class="text-sm text-gray-600">Unattempted</div>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-yellow-800" id="review-count">0</div>
+                    <div class="text-sm text-yellow-600">Marked</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-medium text-blue-800">Quick Navigation</h3>
+                </div>
+                <div id="question-grid" class="grid grid-cols-5 gap-2">
+                    <!-- Questions will be populated here -->
+                </div>
+            </div>
+
+            <button id="submit-test" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition mt-4 hidden">
+                Submit Test
+            </button>
+        </aside>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-2xl font-bold text-blue-800 mb-6 text-center">Test Results</h2>
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="bg-blue-50 p-4 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-blue-800" id="total-score">0</div>
+                    <div class="text-blue-600">Final Score</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-green-800" id="correct-answers">0</div>
+                    <div class="text-green-600">Correct Answers</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span>Total Questions:</span>
+                        <span class="ml-auto font-medium" id="results-total">0</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        <span>Correct Answers:</span>
+                        <span class="ml-auto font-medium" id="results-correct">0</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Attempted:</span>
+                        <span class="ml-auto font-medium" id="results-attempted">0</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Wrong Answers:</span>
+                        <span class="ml-auto font-medium" id="results-wrong">0</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Time Taken:</span>
+                        <span class="ml-auto font-medium" id="results-time">00:00:00</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                        <span>Marked Questions:</span>
+                        <span class="ml-auto font-medium" id="results-marked">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="download-results" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Results (PDF)
+                </button>
+                <button id="close-results" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exam state
+        const examState = {
+            questions: [],
+            currentQuestionIndex: 0,
+            userAnswers: {},
+            markedQuestions: new Set(),
+            timer: null,
+            timeLeft: 180 * 60, // 3 hours in seconds
+            examStarted: false,
+            examEnded: false // New flag to indicate if exam has ended
+        };
+
+        // DOM elements
+        const elements = {
+            instructionsPanel: document.getElementById('instructions-panel'),
+            startExaminationBtn: document.getElementById('start-examination-btn'),
+            questionArea: document.querySelector('.question-area'),
+            reviewPanel: document.querySelector('.review-panel'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            questionNumber: document.getElementById('question-number'),
+            prevBtn: document.getElementById('prev-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            reviewBtn: document.getElementById('review-btn'),
+            pauseBtn: document.getElementById('pause-btn'),
+            submitTest: document.getElementById('submit-test'),
+            feedback: document.getElementById('feedback'),
+            feedbackText: document.getElementById('feedback-text'),
+            feedbackIcon: document.getElementById('feedback-icon'),
+            timer: document.getElementById('timer'),
+            totalQuestions: document.getElementById('total-questions'),
+            attemptedCount: document.getElementById('attempted-count'),
+            unattemptedCount: document.getElementById('unattempted-count'),
+            reviewCount: document.getElementById('review-count'),
+            questionGrid: document.getElementById('question-grid'),
+            resultsModal: document.getElementById('results-modal'),
+            totalScore: document.getElementById('total-score'),
+            correctAnswers: document.getElementById('correct-answers'),
+            resultsTotal: document.getElementById('results-total'),
+            resultsCorrect: document.getElementById('results-correct'),
+            resultsAttempted: document.getElementById('results-attempted'),
+            resultsWrong: document.getElementById('results-wrong'),
+            resultsTime: document.getElementById('results-time'),
+            resultsMarked: document.getElementById('results-marked'),
+            downloadResults: document.getElementById('download-results'),
+            closeResults: document.getElementById('close-results')
+        };
+
+        // Event listeners
+        elements.startExaminationBtn.addEventListener('click', startTest);
+        elements.prevBtn.addEventListener('click', showPreviousQuestion);
+        elements.nextBtn.addEventListener('click', showNextQuestion);
+        elements.reviewBtn.addEventListener('click', toggleReview);
+        elements.pauseBtn.addEventListener('click', togglePauseExam);
+        elements.submitTest.addEventListener('click', submitTest);
+        elements.closeResults.addEventListener('click', closeResults);
+        elements.downloadResults.addEventListener('click', downloadResults);
+
+        // Timer functions
+        function startTimer() {
+            clearInterval(examState.timer);
+            examState.timer = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            examState.timeLeft--;
+            
+            if (examState.timeLeft <= 0) {
+                clearInterval(examState.timer);
+                submitTest();
+                return;
+            }
+            
+            const hours = Math.floor(examState.timeLeft / 3600);
+            const minutes = Math.floor((examState.timeLeft % 3600) / 60);
+            const seconds = examState.timeLeft % 60;
+            
+            elements.timer.querySelector('span').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function togglePauseExam() {
+            if (examState.timer) {
+                clearInterval(examState.timer);
+                examState.timer = null;
+                elements.pauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Resume Exam';
+                elements.pauseBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                elements.pauseBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            } else {
+                startTimer();
+                elements.pauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Pause Exam';
+                elements.pauseBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                elements.pauseBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            }
+        }
+
+        // Question navigation functions
+        function showQuestion(index) {
+            if (index < 0 || index >= examState.questions.length) return;
+            
+            examState.currentQuestionIndex = index;
+            const question = examState.questions[index];
+            
+            // Update question text
+            elements.questionText.textContent = question.text;
+            
+            // Update question number display
+            elements.questionNumber.textContent = `Question ${index + 1} of ${examState.questions.length}`;
+            
+            // Update options
+            elements.optionsContainer.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option border rounded-lg p-3 cursor-pointer transition';
+                
+                const optionLetter = String.fromCharCode(65 + i); // A, B, C, D
+                
+                optionElement.innerHTML = `
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="mcqOption" class="mr-3" value="${optionLetter}" ${examState.examEnded ? 'disabled' : ''}>
+                        <span>${optionLetter}) ${option.text}</span>
+                    </label>
+                `;
+                
+                // Set checked state if user has answered this question
+                if (examState.userAnswers[index] === optionLetter) {
+                    optionElement.querySelector('input').checked = true;
+                    optionElement.classList.add('selected');
+                }
+                
+                // Add feedback if exam has ended
+                if (examState.examEnded) {
+                    if (optionLetter === question.correctAnswer) {
+                        optionElement.classList.add('correct-answer');
+                    } else if (examState.userAnswers[index] === optionLetter && optionLetter !== question.correctAnswer) {
+                        optionElement.classList.add('wrong-answer');
+                    }
+                }
+
+                // Add event listener only if exam has not ended
+                if (!examState.examEnded) {
+                    optionElement.addEventListener('click', function(event) {
+                        if (event.target.tagName === 'INPUT') return;
+                        const radioInput = this.querySelector('input[type="radio"]');
+                        if (radioInput) {
+                            radioInput.checked = true;
+                            handleOptionSelection(radioInput.value);
+                        }
+                    });
+                }
+                
+                elements.optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            elements.prevBtn.disabled = index === 0 || examState.examEnded;
+            elements.nextBtn.textContent = index === examState.questions.length - 1 ? 'Submit Test' : 'Next';
+            elements.nextBtn.disabled = examState.examEnded; // Disable next button if exam ended
+            elements.pauseBtn.disabled = examState.examEnded; // Disable pause button if exam ended
+            elements.reviewBtn.disabled = examState.examEnded; // Disable review button if exam ended
+
+            // Show/hide submit button
+            elements.submitTest.classList.toggle('hidden', index !== examState.questions.length - 1 || examState.examEnded);
+            
+            // Update question navigation grid
+            updateQuestionNavigation(index);
+        }
+
+        function showNextQuestion() {
+            if (examState.currentQuestionIndex === examState.questions.length - 1) {
+                submitTest();
+            } else {
+                showQuestion(examState.currentQuestionIndex + 1);
+            }
+        }
+
+        function showPreviousQuestion() {
+            showQuestion(examState.currentQuestionIndex - 1);
+        }
+
+        function toggleReview() {
+            const currentIndex = examState.currentQuestionIndex;
+            if (examState.markedQuestions.has(currentIndex)) {
+                examState.markedQuestions.delete(currentIndex);
+                elements.reviewBtn.classList.remove('text-yellow-500');
+            } else {
+                examState.markedQuestions.add(currentIndex);
+                elements.reviewBtn.classList.add('text-yellow-500');
+            }
+            updateQuestionStats();
+            updateQuestionNavigation(currentIndex);
+        }
+
+        function handleOptionSelection(selectedOption) {
+            const currentIndex = examState.currentQuestionIndex;
+            examState.userAnswers[currentIndex] = selectedOption;
+            
+            // Update visual feedback
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            const selectedOptionElement = [...document.querySelectorAll('.option')].find(option => 
+                option.querySelector('input').value === selectedOption
+            );
+            
+            if (selectedOptionElement) {
+                selectedOptionElement.classList.add('selected');
+            }
+            
+            updateQuestionStats();
+            updateQuestionNavigation(currentIndex);
+        }
+
+        function updateQuestionStats() {
+            const total = examState.questions.length;
+            const attempted = Object.keys(examState.userAnswers).length;
+            const unattempted = total - attempted;
+            const marked = examState.markedQuestions.size;
+            
+            elements.totalQuestions.textContent = total;
+            elements.attemptedCount.textContent = attempted;
+            elements.unattemptedCount.textContent = unattempted;
+            elements.reviewCount.textContent = marked;
+        }
+
+        function updateQuestionNavigation(currentIndex) {
+            elements.questionGrid.innerHTML = '';
+            
+            for (let i = 0; i < examState.questions.length; i++) {
+                const questionBtn = document.createElement('button');
+                questionBtn.className = 'w-full py-1 rounded-md text-sm';
+                
+                // Set different colors based on status
+                if (i === currentIndex) {
+                    questionBtn.classList.add('bg-blue-200', 'text-blue-800', 'font-bold');
+                } else if (examState.markedQuestions.has(i)) {
+                    questionBtn.classList.add('bg-yellow-100', 'text-yellow-800');
+                } else if (examState.userAnswers[i]) {
+                    questionBtn.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    questionBtn.classList.add('bg-gray-100', 'text-gray-800');
+                }
+                
+                questionBtn.textContent = i + 1;
+                questionBtn.addEventListener('click', () => showQuestion(i));
+                elements.questionGrid.appendChild(questionBtn);
+            }
+        }
+
+        function generateBiologyQuestions(numQuestions = 180) {
+            const biologyQuestions = [
+                {
+                    text: "Which of the following is the functional unit of kidney?",
+                    options: [
+                        { text: "Neuron" },
+                        { text: "Nephron" },
+                        { text: "Alveoli" },
+                        { text: "Bronchiole" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The nephron is the microscopic structural and functional unit of the kidney."
+                },
+                {
+                    text: "Which of the following is not a function of the liver?",
+                    options: [
+                        { text: "Production of bile" },
+                        { text: "Storage of glycogen" },
+                        { text: "Synthesis of red blood cells" },
+                        { text: "Detoxification of harmful substances" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Red blood cells are produced in the bone marrow, not the liver."
+                },
+                {
+                    text: "Which blood group is known as the universal donor?",
+                    options: [
+                        { text: "A" },
+                        { text: "B" },
+                        { text: "AB" },
+                        { text: "O" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Blood group O negative is known as the universal donor as it can be given to any blood type."
+                },
+                {
+                    text: "Which of the following is the powerhouse of the cell?",
+                    options: [
+                        { text: "Nucleus" },
+                        { text: "Mitochondria" },
+                        { text: "Ribosome" },
+                        { text: "Endoplasmic reticulum" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Mitochondria are known as the powerhouse of the cell because they generate most of the cell's supply of ATP."
+                },
+                {
+                    text: "Which of the following is NOT a nitrogenous base found in DNA?",
+                    options: [
+                        { text: "Adenine" },
+                        { text: "Thymine" },
+                        { text: "Uracil" },
+                        { text: "Guanine" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Uracil is found in RNA, not DNA. Thymine is the corresponding base in DNA."
+                },
+                {
+                    text: "The process of conversion of light energy to chemical energy is called:",
+                    options: [
+                        { text: "Respiration" },
+                        { text: "Photosynthesis" },
+                        { text: "Transpiration" },
+                        { text: "Fermentation" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Photosynthesis is the process used by plants, algae, and cyanobacteria to convert light energy into chemical energy."
+                },
+                {
+                    text: "Which hormone is responsible for the 'fight or flight' response?",
+                    options: [
+                        { text: "Insulin" },
+                        { text: "Thyroxine" },
+                        { text: "Adrenaline" },
+                        { text: "Estrogen" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Adrenaline (epinephrine) is a hormone secreted by the adrenal glands, involved in the 'fight or flight' response."
+                },
+                {
+                    text: "The largest gland in the human body is:",
+                    options: [
+                        { text: "Pancreas" },
+                        { text: "Thyroid" },
+                        { text: "Liver" },
+                        { text: "Adrenal" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The liver is the largest internal organ and gland in the human body."
+                },
+                {
+                    text: "What is the main function of red blood cells?",
+                    options: [
+                        { text: "Fighting infection" },
+                        { text: "Clotting blood" },
+                        { text: "Transporting oxygen" },
+                        { text: "Producing antibodies" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Red blood cells contain hemoglobin, which binds to oxygen and transports it from the lungs to the body's tissues."
+                },
+                {
+                    text: "Which part of the brain controls balance and coordination?",
+                    options: [
+                        { text: "Cerebrum" },
+                        { text: "Cerebellum" },
+                        { text: "Medulla oblongata" },
+                        { text: "Thalamus" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The cerebellum is located at the back of the brain, beneath the cerebrum, and plays a crucial role in motor control, including balance and coordination."
+                }
+            ];
+            
+            const questions = [];
+            for (let i = 0; i < numQuestions; i++) {
+                const qIndex = i % biologyQuestions.length;
+                const question = JSON.parse(JSON.stringify(biologyQuestions[qIndex]));
+                
+                // Optionally, randomize options order for each question instance
+                for (let j = question.options.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [question.options[j], question.options[k]] = [question.options[k], question.options[j]];
+                }
+
+                // Re-assign correct answer letter based on new order
+                const originalCorrectText = biologyQuestions[qIndex].options[
+                    biologyQuestions[qIndex].correctAnswer.charCodeAt(0) - 65
+                ].text;
+                question.correctAnswer = String.fromCharCode(
+                    65 + question.options.findIndex(opt => opt.text === originalCorrectText)
+                );
+
+                questions.push(question);
+            }
+            
+            return questions;
+        }
+
+        // Test control functions
+        function startTest() {
+            examState.questions = generateBiologyQuestions(180); // Generate 180 biology questions
+            
+            if (examState.questions.length === 0) {
+                alert('Failed to generate questions. Please try again.');
+                return;
+            }
+            
+            examState.examStarted = true;
+            examState.currentQuestionIndex = 0;
+            examState.userAnswers = {};
+            examState.markedQuestions.clear();
+            examState.timeLeft = 180 * 60; // Reset timer for 3 hours
+            examState.examEnded = false; // Reset exam ended flag
+            
+            // Hide instructions and show exam panels
+            elements.instructionsPanel.classList.add('hidden');
+            elements.questionArea.classList.remove('hidden');
+            elements.reviewPanel.classList.remove('hidden');
+            
+            // Show first question
+            showQuestion(0);
+            updateQuestionStats();
+            
+            // Start timer
+            startTimer();
+            
+            // Update UI for test mode
+            elements.pauseBtn.classList.remove('hidden');
+            elements.submitTest.classList.add('hidden'); // Ensure submit button is hidden until last question
+            
+            // Initialize question navigation grid
+            elements.questionGrid.innerHTML = '';
+            for (let i = 0; i < examState.questions.length; i++) {
+                const questionBtn = document.createElement('button');
+                questionBtn.className = 'w-full py-1 rounded-md text-sm bg-gray-100 text-gray-800';
+                questionBtn.textContent = i + 1;
+                questionBtn.addEventListener('click', () => showQuestion(i));
+                elements.questionGrid.appendChild(questionBtn);
+            }
+        }
+
+        function submitTest() {
+            clearInterval(examState.timer);
+            examState.examEnded = true; // Set flag that exam has ended
+            
+            // Calculate results
+            const totalQuestions = examState.questions.length;
+            const attempted = Object.keys(examState.userAnswers).length;
+            
+            let correct = 0;
+            examState.questions.forEach((question, index) => {
+                if (examState.userAnswers[index] === question.correctAnswer) {
+                    correct++;
+                }
+            });
+            
+            const wrong = attempted - correct;
+            const score = (correct * 4) - (wrong * 1);
+            
+            // Update results modal
+            elements.totalScore.textContent = score;
+            elements.correctAnswers.textContent = correct;
+            elements.resultsTotal.textContent = totalQuestions;
+            elements.resultsCorrect.textContent = correct;
+            elements.resultsAttempted.textContent = attempted;
+            elements.resultsWrong.textContent = wrong;
+            elements.resultsMarked.textContent = examState.markedQuestions.size;
+            
+            // Format time taken
+            const timeTaken = (180 * 60) - examState.timeLeft;
+            const hours = Math.floor(timeTaken / 3600);
+            const minutes = Math.floor((timeTaken % 3600) / 60);
+            const seconds = timeTaken % 60;
+            elements.resultsTime.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Show results modal
+            elements.resultsModal.classList.remove('hidden');
+
+            // Re-render current question to show correct/wrong answers
+            showQuestion(examState.currentQuestionIndex);
+        }
+
+        function closeResults() {
+            elements.resultsModal.classList.add('hidden');
+            
+            // Return to instructions screen
+            elements.instructionsPanel.classList.remove('hidden');
+            elements.questionArea.classList.add('hidden');
+            elements.reviewPanel.classList.add('hidden');
+            
+            // Reset exam state
+            examState.examStarted = false;
+            examState.questions = [];
+            examState.currentQuestionIndex = 0;
+            examState.userAnswers = {};
+            examState.markedQuestions.clear();
+            examState.timeLeft = 180 * 60;
+            examState.examEnded = false;
+
+            // Reset timer display
+            elements.timer.querySelector('span').textContent = '03:00:00';
+        }
+
+        function downloadResults() {
+            alert('In a real implementation, this would generate and download a PDF report with the test results.');
+            // Here you would typically:
+            // 1. Create a PDF using libraries like jsPDF or pdf-lib
+            // 2. Include all the test results
+            // 3. Generate a download link
+        }
+
+        // Initialize the app
+        function init() {
+            updateTimer(); // Show initial timer value
+            // Initially hide question area and review panel
+            elements.questionArea.classList.add('hidden');
+            elements.reviewPanel.classList.add('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>
