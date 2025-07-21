@@ -227,7 +227,7 @@
             pageRendering = true;
             
             pdfDoc.getPage(num).then(function(page) {
-                const viewport = page.getViewport({ scale: scale });
+                const viewport = page.getViewport({ scale: scale * 2 }); // Higher scale for better quality
                 const canvas = document.getElementById('pdf-viewer');
                 const context = canvas.getContext('2d');
                 
@@ -275,13 +275,13 @@
         });
         
         document.getElementById('zoom-in').addEventListener('click', function() {
-            scale += 0.25;
+            scale += 0.5; // Increase zoom increment
             renderPage(pageNum);
         });
         
         document.getElementById('zoom-out').addEventListener('click', function() {
-            if (scale > 0.25) {
-                scale -= 0.25;
+            if (scale > 0.5) { // Prevent zooming out too much
+                scale -= 0.5; // Increase zoom decrement
                 renderPage(pageNum);
             }
         });
