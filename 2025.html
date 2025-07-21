@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET Exam Practice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .option:hover {
+            background-color: #e0f2fe;
+        }
+        .selected {
+            background-color: #bfdbfe;
+            border-color: #3b82f6;
+        }
+        .correct-answer {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .wrong-answer {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .review-btn.active {
+            color: #f59e0b;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            /* On small screens, hide side panels by default */
+            .sidebar, .review-panel {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-sky-500 text-white py-4 px-6 shadow-md">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 class="text-2xl font-bold text-center flex-1">NEET Exam Practice</h1>
+            <div id="timer" class="flex items-center bg-blue-800 px-4 py-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>03:00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto p-4">
+        <!-- Left Panel - Instructions -->
+        <aside id="instructions-panel" class="bg-white p-6 rounded-lg shadow-md md:col-span-1">
+            <h2 class="text-2xl font-bold text-blue-800 mb-4">NEET Examination Instructions</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+                <li>The test consists of Multiple Choice Questions (MCQs).</li>
+                <li>Each question has 4 options, only one of which is correct.</li>
+                <li>For each correct answer, 4 marks will be awarded.</li>
+                <li>For each incorrect answer, 1 mark will be deducted.</li>
+                <li>No marks will be deducted for unattempted questions.</li>
+                <li>The total duration of the exam is 3 hours.</li>
+                <li>You can navigate between questions using 'Previous' and 'Next' buttons.</li>
+                <li>You can mark questions for review and revisit them later.</li>
+                <li>The timer will continue to run even if you pause the exam.</li>
+                <li>Click 'Submit Test' to end the examination and view your results.</li>
+            </ul>
+            <button id="start-examination-btn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition">
+                Start Examination
+            </button>
+        </aside>
+
+        <!-- Center Panel - Question View -->
+        <!-- Changed md:col-span-1 to md:col-span-2 to make it wider -->
+        <main class="question-area bg-white p-6 rounded-lg shadow-md md:col-span-2 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-number" class="font-medium text-blue-800">Question 1 of 180</span>
+                <button id="review-btn" class="text-gray-500 hover:text-yellow-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    <span class="ml-1">Mark for Review</span>
+                </button>
+            </div>
+
+            <div id="question-text" class="mb-6 text-gray-800">
+                <!-- Question text will be loaded here -->
+            </div>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options will be loaded here -->
+            </div>
+
+            <div id="feedback" class="hidden mt-4 p-3 rounded-lg">
+                <div class="flex items-center space-x-2">
+                    <span id="feedback-icon"></span>
+                    <span id="feedback-text" class="font-medium"></span>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition flex items-center disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                </button>
+                <button id="pause-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pause Exam
+                </button>
+                <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Panel - Review Navigation -->
+        <aside class="review-panel bg-white p-4 rounded-lg shadow-md md:col-span-1 hidden">
+            <h2 class="text-lg font-semibold text-blue-800 mb-4">Question Status</h2>
+            <div class="grid grid-cols-5 gap-2 mb-6">
+                <div class="bg-blue-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-blue-800" id="total-questions">0</div>
+                    <div class="text-sm text-blue-600">Total</div>
+                </div>
+                <div class="bg-green-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-800" id="attempted-count">0</div>
+                    <div class="text-sm text-green-600">Attempted</div>
+                </div>
+                <div class="bg-gray-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-gray-800" id="unattempted-count">0</div>
+                    <div class="text-sm text-gray-600">Unattempted</div>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-yellow-800" id="review-count">0</div>
+                    <div class="text-sm text-yellow-600">Marked</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-medium text-blue-800">Quick Navigation</h3>
+                </div>
+                <div id="question-grid" class="grid grid-cols-5 gap-2">
+                    <!-- Questions will be populated here -->
+                </div>
+            </div>
+
+            <button id="submit-test" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition mt-4 hidden">
+                Submit Test
+            </button>
+        </aside>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-2xl font-bold text-blue-800 mb-6 text-center">Test Results</h2>
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="bg-blue-50 p-4 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-blue-800" id="total-score">0</div>
+                    <div class="text-blue-600">Final Score</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-green-800" id="correct-answers">0</div>
+                    <div class="text-green-600">Correct Answers</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span>Total Questions:</span>
+                        <span class="ml-auto font-medium" id="results-total">0</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        <span>Correct Answers:</span>
+                        <span class="ml-auto font-medium" id="results-correct">0</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Attempted:</span>
+                        <span class="ml-auto font-medium" id="results-attempted">0</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Wrong Answers:</span>
+                        <span class="ml-auto font-medium" id="results-wrong">0</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Time Taken:</span>
+                        <span class="ml-auto font-medium" id="results-time">00:00:00</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                        <span>Marked Questions:</span>
+                        <span class="ml-auto font-medium" id="results-marked">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="download-results" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Results (PDF)
+                </button>
+                <button id="close-results" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exam state
+        const examState = {
+            questions: [],
+            currentQuestionIndex: 0,
+            userAnswers: {},
+            markedQuestions: new Set(),
+            timer: null,
+            timeLeft: 180 * 60, // 3 hours in seconds
+            examStarted: false,
+            examEnded: false // New flag to indicate if exam has ended
+        };
+
+        // DOM elements
+        const elements = {
+            instructionsPanel: document.getElementById('instructions-panel'),
+            startExaminationBtn: document.getElementById('start-examination-btn'),
+            questionArea: document.querySelector('.question-area'),
+            reviewPanel: document.querySelector('.review-panel'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            questionNumber: document.getElementById('question-number'),
+            prevBtn: document.getElementById('prev-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            reviewBtn: document.getElementById('review-btn'),
+            pauseBtn: document.getElementById('pause-btn'),
+            submitTest: document.getElementById('submit-test'),
+            feedback: document.getElementById('feedback'),
+            feedbackText: document.getElementById('feedback-text'),
+            feedbackIcon: document.getElementById('feedback-icon'),
+            timer: document.getElementById('timer'),
+            totalQuestions: document.getElementById('total-questions'),
+            attemptedCount: document.getElementById('attempted-count'),
+            unattemptedCount: document.getElementById('unattempted-count'),
+            reviewCount: document.getElementById('review-count'),
+            questionGrid: document.getElementById('question-grid'),
+            resultsModal: document.getElementById('results-modal'),
+            totalScore: document.getElementById('total-score'),
+            correctAnswers: document.getElementById('correct-answers'),
+            resultsTotal: document.getElementById('results-total'),
+            resultsCorrect: document.getElementById('results-correct'),
+            resultsAttempted: document.getElementById('results-attempted'),
+            resultsWrong: document.getElementById('results-wrong'),
+            resultsTime: document.getElementById('results-time'),
+            resultsMarked: document.getElementById('results-marked'),
+            downloadResults: document.getElementById('download-results'),
+            closeResults: document.getElementById('close-results')
+        };
+
+        // Event listeners
+        elements.startExaminationBtn.addEventListener('click', startTest);
+        elements.prevBtn.addEventListener('click', showPreviousQuestion);
+        elements.nextBtn.addEventListener('click', showNextQuestion);
+        elements.reviewBtn.addEventListener('click', toggleReview);
+        elements.pauseBtn.addEventListener('click', togglePauseExam);
+        elements.submitTest.addEventListener('click', submitTest);
+        elements.closeResults.addEventListener('click', closeResults);
+        elements.downloadResults.addEventListener('click', downloadResults);
+
+        // Timer functions
+        function startTimer() {
+            clearInterval(examState.timer);
+            examState.timer = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            examState.timeLeft--;
+            
+            if (examState.timeLeft <= 0) {
+                clearInterval(examState.timer);
+                submitTest();
+                return;
+            }
+            
+            const hours = Math.floor(examState.timeLeft / 3600);
+            const minutes = Math.floor((examState.timeLeft % 3600) / 60);
+            const seconds = examState.timeLeft % 60;
+            
+            elements.timer.querySelector('span').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function togglePauseExam() {
+            if (examState.timer) {
+                clearInterval(examState.timer);
+                examState.timer = null;
+                elements.pauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Resume Exam';
+                elements.pauseBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                elements.pauseBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            } else {
+                startTimer();
+                elements.pauseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Pause Exam';
+                elements.pauseBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                elements.pauseBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            }
+        }
+
+        // Question navigation functions
+        function showQuestion(index) {
+            if (index < 0 || index >= examState.questions.length) return;
+            
+            examState.currentQuestionIndex = index;
+            const question = examState.questions[index];
+            
+            // Update question text
+            elements.questionText.textContent = question.text;
+            
+            // Update question number display
+            elements.questionNumber.textContent = `Question ${index + 1} of ${examState.questions.length}`;
+            
+            // Update options
+            elements.optionsContainer.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option border rounded-lg p-3 cursor-pointer transition';
+                
+                const optionLetter = String.fromCharCode(65 + i); // A, B, C, D
+                
+                optionElement.innerHTML = `
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="mcqOption" class="mr-3" value="${optionLetter}" ${examState.examEnded ? 'disabled' : ''}>
+                        <span>${optionLetter}) ${option.text}</span>
+                    </label>
+                `;
+                
+                // Set checked state if user has answered this question
+                if (examState.userAnswers[index] === optionLetter) {
+                    optionElement.querySelector('input').checked = true;
+                    optionElement.classList.add('selected');
+                }
+                
+                // Add feedback if exam has ended
+                if (examState.examEnded) {
+                    if (optionLetter === question.correctAnswer) {
+                        optionElement.classList.add('correct-answer');
+                    } else if (examState.userAnswers[index] === optionLetter && optionLetter !== question.correctAnswer) {
+                        optionElement.classList.add('wrong-answer');
+                    }
+                }
+
+                // Add event listener only if exam has not ended
+                if (!examState.examEnded) {
+                    optionElement.addEventListener('click', function(event) {
+                        if (event.target.tagName === 'INPUT') return;
+                        const radioInput = this.querySelector('input[type="radio"]');
+                        if (radioInput) {
+                            radioInput.checked = true;
+                            handleOptionSelection(radioInput.value);
+                        }
+                    });
+                }
+                
+                elements.optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            elements.prevBtn.disabled = index === 0 || examState.examEnded;
+            elements.nextBtn.textContent = index === examState.questions.length - 1 ? 'Submit Test' : 'Next';
+            elements.nextBtn.disabled = examState.examEnded; // Disable next button if exam ended
+            elements.pauseBtn.disabled = examState.examEnded; // Disable pause button if exam ended
+            elements.reviewBtn.disabled = examState.examEnded; // Disable review button if exam ended
+
+            // Show/hide submit button
+            elements.submitTest.classList.toggle('hidden', index !== examState.questions.length - 1 || examState.examEnded);
+            
+            // Update question navigation grid
+            updateQuestionNavigation(index);
+        }
+
+        function showNextQuestion() {
+            if (examState.currentQuestionIndex === examState.questions.length - 1) {
+                submitTest();
+            } else {
+                showQuestion(examState.currentQuestionIndex + 1);
+            }
+        }
+
+        function showPreviousQuestion() {
+            showQuestion(examState.currentQuestionIndex - 1);
+        }
+
+        function toggleReview() {
+            const currentIndex = examState.currentQuestionIndex;
+            if (examState.markedQuestions.has(currentIndex)) {
+                examState.markedQuestions.delete(currentIndex);
+                elements.reviewBtn.classList.remove('text-yellow-500');
+            } else {
+                examState.markedQuestions.add(currentIndex);
+                elements.reviewBtn.classList.add('text-yellow-500');
+            }
+            updateQuestionStats();
+            updateQuestionNavigation(currentIndex);
+        }
+
+        function handleOptionSelection(selectedOption) {
+            const currentIndex = examState.currentQuestionIndex;
+            examState.userAnswers[currentIndex] = selectedOption;
+            
+            // Update visual feedback
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            const selectedOptionElement = [...document.querySelectorAll('.option')].find(option => 
+                option.querySelector('input').value === selectedOption
+            );
+            
+            if (selectedOptionElement) {
+                selectedOptionElement.classList.add('selected');
+            }
+            
+            updateQuestionStats();
+            updateQuestionNavigation(currentIndex);
+        }
+
+        function updateQuestionStats() {
+            const total = examState.questions.length;
+            const attempted = Object.keys(examState.userAnswers).length;
+            const unattempted = total - attempted;
+            const marked = examState.markedQuestions.size;
+            
+            elements.totalQuestions.textContent = total;
+            elements.attemptedCount.textContent = attempted;
+            elements.unattemptedCount.textContent = unattempted;
+            elements.reviewCount.textContent = marked;
+        }
+
+        function updateQuestionNavigation(currentIndex) {
+            elements.questionGrid.innerHTML = '';
+            
+            for (let i = 0; i < examState.questions.length; i++) {
+                const questionBtn = document.createElement('button');
+                questionBtn.className = 'w-full py-1 rounded-md text-sm';
+                
+                // Set different colors based on status
+                if (i === currentIndex) {
+                    questionBtn.classList.add('bg-blue-200', 'text-blue-800', 'font-bold');
+                } else if (examState.markedQuestions.has(i)) {
+                    questionBtn.classList.add('bg-yellow-100', 'text-yellow-800');
+                } else if (examState.userAnswers[i]) {
+                    questionBtn.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    questionBtn.classList.add('bg-gray-100', 'text-gray-800');
+                }
+                
+                questionBtn.textContent = i + 1;
+                questionBtn.addEventListener('click', () => showQuestion(i));
+                elements.questionGrid.appendChild(questionBtn);
+            }
+        }
+
+        function generateBiologyQuestions(numQuestions = 180) {
+            const biologyQuestions = [
+                {
+                    text: "The complex II of mitochondrial electron transport chain is also known as",
+                    options: [
+                        { text: "Cytochrome bc1" },
+                        { text: "Succinate dehydrogenase" },
+                        { text: "Cytochrome c oxidase" },
+                        { text: "NADH dehydrogenase" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Succinate dehydrogenase is also known as complex II of the mitochondrial electron transport chain."
+                },
+                {
+                    text: "Polymerase chain reaction (PCR) amplifies DNA following the equation.",
+                    options: [
+                        { text: "N^2" },
+                        { text: "2^n" },
+                        { text: "2n + 1" },
+                        { text: "2N^2" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "PCR amplifies DNA exponentially, doubling the number of DNA copies in each cycle, hence 2^n where n is the number of cycles."
+                },
+                {
+                    text: "What are the potential drawbacks in adoption of the IVF method?\nA. High fatality risk to mother\nB. Expensive instruments and reagents\nC. Husband/wife necessary for being donors\nD. Less adoption of orphans\nE. Not available in India\nF. Possibility that the early embryo does not survive\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "B, D, F only." },
+                        { text: "A, C, D, F only" },
+                        { text: "A, B, C, D only" },
+                        { text: "A, B, C, E, F only" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "IVF involves expensive procedures and reagents, can lead to less adoption of orphans, and there's a possibility that the early embryo might not survive."
+                },
+                {
+                    text: "What is the name of the blood vessel that carries deoxygenated blood from the body to the heart in a frog?",
+                    options: [
+                        { text: "Aorta" },
+                        { text: "Pulmonary artery" },
+                        { text: "Pulmonary vein" },
+                        { text: "Vena cava" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "The vena cava carries deoxygenated blood from the body to the heart in frogs, similar to mammals."
+                },
+                {
+                    text: "Which one of the following statements refers to Reductionist Biology?",
+                    options: [
+                        { text: "Physico-chemical approach to study and understand living organisms." },
+                        { text: "Physiological approach to study and understand, living organisms." },
+                        { text: "Chemical approach to study and understand living organisms." },
+                        { text: "Behavioural approach to study and understand living organisms." }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Reductionist biology involves studying complex biological systems by breaking them down into their simpler components, often using physico-chemical principles."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: In the RNA world, RNA is considered the first genetic material evolved to carry out essential life processes. RNA acts as a genetic material and also as a catalyst for some important biochemical reactions in living systems. Being reactive, RNA is unstable.\nStatement II: DNA evolved from RNA and is a more stable genetic material. Its double helical strands being complementary, resist changes by evolving repairing mechanism.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Both statements are correct. The RNA world hypothesis suggests RNA as the initial genetic material due to its catalytic and genetic roles, and DNA later evolved as a more stable genetic carrier."
+                },
+                {
+                    text: "Epiphytes that are growing on a mango branch is an example of which of the following?",
+                    options: [
+                        { text: "Commensalism" },
+                        { text: "Mutualism" },
+                        { text: "Predation" },
+                        { text: "Amensalism" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Commensalism is a relationship where one organism benefits and the other is neither harmed nor benefited. Epiphytes benefit from support without harming the mango tree."
+                },
+                {
+                    text: "From the statements given below choose the correct option:\nA. The eukaryotic ribosomes are 80S and prokaryotic ribosomes are 70S.\nB. Each ribosome has two sub-units.\nC. The two sub-units of 80S ribosome are 60S and 40S while that of 70S are 50S and 30S.\nD. The two sub-units of 80S ribosome are 60S and 20S and that of 70S are 50S and 20S.\nE. The two sub-units of 80S are 60S and 30S and that of 70S are 50S and 30S",
+                    options: [
+                        { text: "A, B, C are true" },
+                        { text: "A, B, D are true" },
+                        { text: "A, B, E are true" },
+                        { text: "B, D, E are true" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Eukaryotic ribosomes are 80S (60S + 40S subunits) and prokaryotic ribosomes are 70S (50S + 30S subunits). All ribosomes have two subunits."
+                },
+                {
+                    text: "Which one of the following is an example of ex-situ conservation?",
+                    options: [
+                        { text: "National Park" },
+                        { text: "Wildlife Sanctuary" },
+                        { text: "Zoos and botanical gardens" },
+                        { text: "Protected areas." }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Ex-situ conservation involves conserving species outside their natural habitats, such as in zoos and botanical gardens."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: The primary source of energy in an ecosystem is solar energy.\nStatement II: The rate of production of organic matter during photosynthesis in an ecosystem is called net primary productivity (NPP).\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Statement I is correct. Statement II is incorrect because NPP is the rate of organic matter production minus the rate of respiration by producers (GPP - R)."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Emphysema\nB. Angina Pectoris\nC. Glomerulo-nephritis\nD. Tetany\nList-II\nI. Rapid spasms in muscle due to low Ca++ in body fluid\nII. Damaged alveolar walls and decreased respiratory surface\nIII. Acute chest pain when not enough oxygen is reaching to heart muscle\nIV. Inflammation of glomeruli of kidney\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-III, B-I, C-IV, D-II" },
+                        { text: "A-III, B-I, C-II, D-IV" },
+                        { text: "A-II, B-IV, C-III, D-I" },
+                        { text: "A-II, B-III, C-IV, D-I" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Emphysema is characterized by damaged alveolar walls. Angina Pectoris is acute chest pain due to insufficient oxygen to heart muscle. Glomerulonephritis is inflammation of kidney glomeruli. Tetany is rapid muscle spasms due to low Ca++."
+                },
+                {
+                    text: "Given below are two statement: One is labelled as Assertion (A) and the other is labelled as Reason (R).\nAssertion (A): Both wind and water pollinated flowers are not very colourful and do not produce nectar.\nReason (R): The flowers produce enormous amount of pollen grains in wind and water pollinated flowers.\nIn the light of the above statements, choose the correct answer from the options given below:",
+                    options: [
+                        { text: "Both A and R are true and R is the correct explanation of A." },
+                        { text: "Both A and R are true but R is NOT the correct explanation of A." },
+                        { text: "A is true but R is false." },
+                        { text: "A is false but R is true." }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Both statements are true, but the reason (large pollen production) does not directly explain why the flowers are not colorful or nectar-producing. These traits are adaptations to wind/water pollination, which don't require attracting pollinators."
+                },
+                {
+                    text: "Which of the following is an example of non-distilled alcoholic beverage produced by yeast?",
+                    options: [
+                        { text: "Whisky" },
+                        { text: "Brandy" },
+                        { text: "Beer" },
+                        { text: "Rum" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Beer is a non-distilled alcoholic beverage produced by the fermentation of grains by yeast. Whisky, brandy, and rum are distilled."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: In a floral formula \$ \\oplus \$ stands for zygomorphic nature of the flower, and G stands for inferior ovary.\nStatement II: In a floral formula \$ \\oplus \$ stands for actinomorphic nature of the flower and G stands for superior ovary.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Statement I is incorrect: \$ \\oplus \$ stands for actinomorphic (radial symmetry), and G with a bar below it (G) stands for superior ovary, while G with a bar above it (G) stands for inferior ovary. Statement II is correct."
+                },
+                {
+                    text: "Streptokinase produced by bacterium Streptococcus is used for",
+                    options: [
+                        { text: "Curd production" },
+                        { text: "Ethanol production" },
+                        { text: "Liver disease treatment" },
+                        { text: "Removing clots from blood vessels" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Streptokinase is a thrombolytic drug used to dissolve blood clots in conditions like myocardial infarction."
+                },
+                {
+                    text: "Which chromosome in the human genome has the highest number of genes?",
+                    options: [
+                        { text: "Chromosome X" },
+                        { text: "Chromosome Y" },
+                        { text: "Chromosome 1" },
+                        { text: "Chromosome 10" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Chromosome 1 is the largest human chromosome and has the highest number of genes."
+                },
+                {
+                    text: "Which of the following statement is correct about location of the male frog copulatory pad?",
+                    options: [
+                        { text: "First and Second digit of fore limb" },
+                        { text: "First digit of hind limb" },
+                        { text: "Second digit of fore limb" },
+                        { text: "First digit of the fore limb" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "The male frog's copulatory pad (nuptial pad) is typically found on the first digit (thumb) of the forelimb."
+                },
+                {
+                    text: "Which one of the following phytohormones promotes nutrient mobilization which helps in the delay of leaf senescence in plants?",
+                    options: [
+                        { text: "Ethylene" },
+                        { text: "Abscisic acid" },
+                        { text: "Gibberellin" },
+                        { text: "Cytokinin" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Cytokinins are plant hormones that promote cell division, delay senescence, and promote nutrient mobilization."
+                },
+                {
+                    text: "While trying to find out the characteristic of a newly found animal, a researcher did the histology of adult animal and observed a cavity with presence of mesodermal tissue towards the body wall but no mesodermal tissue was observed towards the alimentary canal. What could be the possible coelome of that animal?",
+                    options: [
+                        { text: "Acoelomate" },
+                        { text: "Pseudocoelomate" },
+                        { text: "Schizocoelomate" },
+                        { text: "Spongocoelomate" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "A pseudocoelomate has a body cavity that is not fully lined by mesoderm; mesoderm lines the body wall but not the gut."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Head\nB. Middle piece\nC. Acrosome\nD. Tail\nList-II\nI. Enzymes\nII. Sperm motility\nIII. Energy\nIV. Genetic material\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-IV, B-III, C-I, D-II" },
+                        { text: "A-IV, B-III, C-II, D-I" },
+                        { text: "A-III, B-IV, C-II, D-I" },
+                        { text: "A-III, B-II, C-I, D-IV" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Head contains genetic material, middle piece provides energy (mitochondria), acrosome contains enzymes for fertilization, and tail provides motility."
+                },
+                {
+                    text: "Given below are the stages in the life cycle of pteridophytes. Arrange the following stages in the correct sequence.\nA. Prothallus stage\nB. Meiosis in spore mother cells\nC. Fertilisation\nD. Formation of archegonia and antheridia in gametophyte.\nE. Transfer of antherozoids to the archegonia in presence of water.\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "B, A, D, E, C" },
+                        { text: "B, A, E, C, D" },
+                        { text: "D, E, C, A, B" },
+                        { text: "E, D, C, B, A" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "The sequence is: Meiosis in spore mother cells (B) -> Prothallus stage (A) -> Formation of archegonia and antheridia (D) -> Transfer of antherozoids (E) -> Fertilisation (C)."
+                },
+                {
+                    text: "Cardiac activities of the heart are regulated by:\nA. Nodal tissue\nB. A special neural centre in the medulla oblongata\nC. Adrenal medullary hormones\nD. Adrenal cortical hormones\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A, B and C Only." },
+                        { text: "A, B, C and D" },
+                        { text: "A, C and D Only" },
+                        { text: "A, B and D Only" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Cardiac activities are regulated by nodal tissue (SA node, AV node), a neural center in the medulla oblongata, and adrenal medullary hormones (adrenaline, noradrenaline)."
+                },
+                {
+                    text: "Which of following organisms cannot fix nitrogen?\nA. Azotobacter\nB. Oscillatoria\nC. Anabaena\nD. Volvox\nE. Nostoc\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A only" },
+                        { text: "D only" },
+                        { text: "B only" },
+                        { text: "E only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Volvox is a green alga and does not fix nitrogen. Azotobacter, Oscillatoria, Anabaena, and Nostoc are known nitrogen fixers."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: Transfer RNAs and ribosomal RNA do not interact with mRNA.\nStatement II: RNA interference (RNAi) takes place in all eukaryotic organisms as a method of cellular defence.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Statement I is incorrect: tRNA interacts with mRNA during translation, and rRNA is a structural component of ribosomes which interact with mRNA. Statement II is correct."
+                },
+                {
+                    text: "In the above represented plasmid an alien piece of DNA is inserted at EcoRI site. Which of the following strategies will be chosen to select the recombinant colonies?",
+                    options: [
+                        { text: "Using ampicillin & tetracyclin containing medium plate." },
+                        { text: "Blue color colonies will be selected." },
+                        { text: "White color colonies will be selected." },
+                        { text: "Blue color colonies grown on ampicillin plates can be selected." }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "If the EcoRI site is within a gene for color production (e.g., lacZ gene), insertion of foreign DNA will disrupt this gene, leading to white colonies (loss of function), while non-recombinant colonies will be blue."
+                },
+                {
+                    text: "Which of the following genetically engineered organisms was used by Eli Lilly to prepare human insulin?",
+                    options: [
+                        { text: "Bacterium" },
+                        { text: "Yeast" },
+                        { text: "Virus" },
+                        { text: "Phage" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Eli Lilly used genetically engineered E. coli (a bacterium) to produce human insulin (Humulin)."
+                },
+                {
+                    text: "Name the class of enzyme that usually catalyze the following reaction:\nS – G + S# → S + S# – G\nWhere, G → a group other than hydrogen\nS → a substrate\nS# → another substrate",
+                    options: [
+                        { text: "Hydrolase" },
+                        { text: "Lyase" },
+                        { text: "Transferase" },
+                        { text: "Ligase" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The reaction describes the transfer of a group (G) from one substrate (S) to another (S#), which is characteristic of transferase enzymes."
+                },
+                {
+                    text: "Find the statement that is NOT correct with regard to the structure of monocot stem.",
+                    options: [
+                        { text: "Hypodermis is parenchymatous." },
+                        { text: "Vascular bundles are scattered." },
+                        { text: "Vascular bundles are conjoint and closed." },
+                        { text: "Phloem parenchyma is absent." }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "In monocot stems, the hypodermis is typically sclerenchymatous, not parenchymatous."
+                },
+                {
+                    text: "The correct sequence of events in the life cycle of bryophytes is\nA. Fusion of antherozoid with egg.\nB. Attachment of gametophyte to substratum.\nC. Reduction division to produce haploid spores.\nD. Formation of sporophyte.\nE. Release of antherozoids into water.\nChoose the correct answer from the option given below:",
+                    options: [
+                        { text: "D, E, A, C, B" },
+                        { text: "B, E, A, C, D" },
+                        { text: "B, E, A, D, C" },
+                        { text: "D, E, A, B, C" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The correct sequence is: Attachment of gametophyte to substratum (B) -> Release of antherozoids into water (E) -> Fusion of antherozoid with egg (A) -> Formation of sporophyte (D) -> Reduction division to produce haploid spores (C)."
+                },
+                {
+                    text: "Which are correct:\nA. Computed tomography and magnetic resonance imaging detect cancers of internal organs.\nB. Chemotherapeutics drugs are used to kill non-cancerous cells.\nC. \\(\\alpha\\)-interferon activate the cancer patients’ immune system and helps in destroying the tumour.\nD. Chemotherapeutic drugs are biological response modifiers.\nE. In the case of leukaemia blood cells counts are decreased.\nChoose the correct answer from the option given below:",
+                    options: [
+                        { text: "B and D only" },
+                        { text: "D and E only" },
+                        { text: "C and D only" },
+                        { text: "A and C only" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "A and C are correct. B is incorrect as chemotherapeutic drugs target cancerous cells. D is incorrect as chemotherapeutic drugs are not biological response modifiers. E is incorrect as leukemia involves increased white blood cell counts."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Centromere\nB. Cilium\nC. Cristae\nD. Cell membrane\nList-II\nI. Mitochondrion\nII. Cell division\nIII. Cell movement\nIV. Phospholipid Bilayer\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-I, B-II, C-III, D-IV" },
+                        { text: "A-II, B-I, C-IV, D-III" },
+                        { text: "A-IV, B-II, C-III, D-I" },
+                        { text: "A-II, B-III, C-I, D-IV" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Centromere is involved in cell division. Cilium is for cell movement. Cristae are folds in mitochondria. Cell membrane is a phospholipid bilayer."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Chlorophyll a\nB. Chlorophyll b\nC. Xanthophylls\nD. Carotenoids\nList-II\nI. Yellow-green\nII. Yellow\nIII. Blue-green\nIV. Yellow to Yellow-orange\nChoose the option with all correct matches.",
+                    options: [
+                        { text: "A-III, B-IV, C-II, D-I" },
+                        { text: "A-III, B-I, C-II, D-IV" },
+                        { text: "A-I, B-II, C-IV, D-III" },
+                        { text: "A-I, B-IV, C-III, D-II" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Chlorophyll a is blue-green. Chlorophyll b is yellow-green. Xanthophylls are yellow. Carotenoids are yellow to yellow-orange."
+                },
+                {
+                    text: "Find the correct statements:\nA. In human pregnancy, the major organ systems are formed at the end of 12 weeks.\nB. In human pregnancy the major organ systems are formed at the end of 8 weeks.\nC. In human pregnancy heart is formed after one month of gestation.\nD. In human pregnancy, limbs and digits develop by the end of second month.\nE. In human pregnancy the appearance of hair usually observed in the fifth month.\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A and E Only" },
+                        { text: "B and C Only" },
+                        { text: "B, C, D and E Only" },
+                        { text: "A, C, D and E Only" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "A, C, D, and E are correct. Major organ systems are formed by the end of 12 weeks (first trimester). Heart is formed after one month. Limbs and digits develop by the end of the second month. Hair appears in the fifth month."
+                },
+                {
+                    text: "In the seeds of cereals, the outer covering of endosperm separates the embryo by a protein-rich layer called:",
+                    options: [
+                        { text: "Coleoptile" },
+                        { text: "Coleorhiza" },
+                        { text: "Integument" },
+                        { text: "Aleurone layer" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "The aleurone layer is a protein-rich layer that surrounds the endosperm in cereal grains and separates it from the embryo."
+                },
+                {
+                    text: "Which of the following diagrams is correct with regard to the proximal (P) and distal (D) tubule of the Nephron.",
+                    options: [
+                        { text: "(Image 1)" },
+                        { text: "(Image 2)" },
+                        { text: "(Image 3)" },
+                        { text: "(Image 4)" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Without the actual images, it's impossible to provide a specific explanation. However, the correct diagram would accurately depict the structural differences and relative positions of the PCT and DCT in a nephron."
+                },
+                {
+                    text: "Identify the part of a bio-reactor which is used as a foam braker from the given figure.",
+                    options: [
+                        { text: "A" },
+                        { text: "B" },
+                        { text: "D" },
+                        { text: "C" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Without the actual figure, it's impossible to identify the specific part. However, in a typical bioreactor diagram, 'C' often represents the foam breaker."
+                },
+                {
+                    text: "Given below are two statements: One is labelled as Assertion (A) and the other is labelled as Reason (R).\nAssertion (A): A typical unfertilized, angiosperm embryo sac at maturity is 8 nucleate and 7-celled.\nReason (R): The egg apparatus has 2 polar nuclei.\nIn the light of the above statements, choose the correct answer from the options given below:",
+                    options: [
+                        { text: "Both A and R are true and R is the correct explanation of A" },
+                        { text: "Both A and R are true but R is NOT the correct explanation of A" },
+                        { text: "A is true but R is false" },
+                        { text: "A is false but R is true" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Assertion (A) is true. A typical embryo sac is 8-nucleate and 7-celled. Reason (R) is false: The egg apparatus has one egg cell and two synergids, not polar nuclei. Polar nuclei are in the central cell."
+                },
+                {
+                    text: "A specialized membranous structure in a prokaryotic cell which helps in cell wall formation, DNA replication and respiration is:",
+                    options: [
+                        { text: "Mesosome" },
+                        { text: "Chromatophores" },
+                        { text: "Cristae" },
+                        { text: "Endoplasmic Reticulum" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Mesosomes are invaginations of the plasma membrane in prokaryotic cells that are involved in various functions including cell wall formation, DNA replication, and respiration."
+                },
+                {
+                    text: "Which of the following are the post-transcriptional events in an eukaryotic cell?\nA. Transport of pre-mRNA to cytoplasm prior to splicing.\nB. Removal of introns and joining of exons.\nC. Addition of methyl group at 5’ end of hnRNA.\nD. Addition of adenine residues at 3’ end of hnRNA.\nE. Base pairing of two complementary RNAs.\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A, B, C only" },
+                        { text: "B, C, D only" },
+                        { text: "B, C, E only" },
+                        { text: "C, D, E only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Post-transcriptional events in eukaryotes include splicing (removal of introns and joining of exons), 5' capping (addition of methyl group), and 3' polyadenylation (addition of adenine residues). Transport to cytoplasm occurs after these modifications, and base pairing of complementary RNAs is related to RNAi, not standard post-transcriptional modification of hnRNA."
+                },
+                {
+                    text: "What is the pattern of inheritance for polygenic trait?",
+                    options: [
+                        { text: "Mendelian inheritance pattern" },
+                        { text: "Non-mendelian inheritance pattern" },
+                        { text: "Autosomal dominant pattern" },
+                        { text: "X-linked recessive inheritance pattern" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Polygenic traits are controlled by multiple genes and often show continuous variation, which is a non-Mendelian inheritance pattern."
+                },
+                {
+                    text: "Which one of the following enzymes contains ‘Haem’ as the prosthetic group?",
+                    options: [
+                        { text: "RuBisCo" },
+                        { text: "Carbonic anhydrase" },
+                        { text: "Succinate dehydrogenase" },
+                        { text: "Catalase" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Catalase is a heme-containing enzyme that catalyzes the decomposition of hydrogen peroxide to water and oxygen."
+                },
+                {
+                    text: "Each of the following characteristics represent a Kingdom proposed by Whittaker. Arrange the following in increasing order of complexity of body organization.\nA. Multicellular heterotrophs with cell wall made of chitin.\nB. Heterotrophs with tissue/organ/organ system level of body organization.\nC. Prokaryotes with cell wall made of polysaccharides and amino acids.\nD. Eukaryotic autotrophs with tissue/organ level of body organization.\nE. Eukaryotes with cellular body organization.\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A, C, E, B, D" },
+                        { text: "C, E, A, D, B" },
+                        { text: "A, C, E, D, B" },
+                        { text: "C, E, A, B, D" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The increasing order of complexity is: Prokaryotes (Monera - C) -> Eukaryotes with cellular organization (Protista - E) -> Multicellular heterotrophs with chitin cell wall (Fungi - A) -> Eukaryotic autotrophs with tissue/organ level (Plantae - D) -> Heterotrophs with tissue/organ/organ system level (Animalia - B)."
+                },
+                {
+                    text: "Who is known as the father of Ecology in India?",
+                    options: [
+                        { text: "S. R. Kashyap" },
+                        { text: "Ramdeo Misra" },
+                        { text: "Ram Udar" },
+                        { text: "Birbal Sahni" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Professor Ramdeo Misra is widely regarded as the Father of Ecology in India."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Alfred Hershey and Martha Chase\nB. Euchromatin\nC. Frederick Griffith\nD. Heterochromatin\nList-II\nI. Streptococcus Pneumoniae\nII. Densely packed and dark-stained\nIII. Loosely packed and light-stained\nIV. DNA as genetic material confirmation\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-II, B-IV, C-I, D-III" },
+                        { text: "A-IV, B-II, C-I, D-III" },
+                        { text: "A-IV, B-III, C-I, D-II" },
+                        { text: "A-III, B-II, C-IV, D-I" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Hershey and Chase confirmed DNA as genetic material. Euchromatin is loosely packed and light-stained. Griffith's experiment involved Streptococcus Pneumoniae. Heterochromatin is densely packed and dark-stained."
+                },
+                {
+                    text: "Neoplastic characteristics of cells refers to:\nA. A mass of proliferating cell\nB. Rapid growth of cells\nC. Invasion and damage to the surrounding tissue\nD. Those confined to original location\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A, B only" },
+                        { text: "A, B, C only" },
+                        { text: "A, B, D only" },
+                        { text: "B, C, D only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Neoplastic cells are characterized by uncontrolled proliferation (A), rapid growth (B), and the ability to invade and damage surrounding tissues (C). Being confined to the original location (D) describes benign tumors, not all neoplastic characteristics."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: The DNA fragments extracted from gel electrophoresis can be used in construction of recombinant DNA.\nStatement II: Smaller size DNA fragments are observed near anode while larger fragments are found near the wells in an agarose gel.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Both statements are correct. Gel electrophoresis separates DNA fragments by size, and smaller fragments move faster towards the anode. The separated fragments can then be used for recombinant DNA technology."
+                },
+                {
+                    text: "Match List I with List II.\nList I\nA. Adenosine\nB. Adenylic acid\nC. Adenine\nD. Alanine\nList II\nI. Nitrogen base\nII. Nucleotide\nIII. Nucleoside\nIV. Amino acid\nChoose the option with all correct matches.",
+                    options: [
+                        { text: "A-III, B-IV, C-II, D-I" },
+                        { text: "A-III, B-II, C-IV, D-I" },
+                        { text: "A-III, B-II, C-I, D-IV" },
+                        { text: "A-II, B-III, C-I, D-IV" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Adenosine is a nucleoside. Adenylic acid is a nucleotide. Adenine is a nitrogen base. Alanine is an amino acid."
+                },
+                {
+                    text: "Consider the following:\nA. The reductive division for the human female gametogenesis starts earlier than that of the male gametogenesis.\nB. The gap between the first meiotic division and the second meiotic division is much shorter for males compared to females.\nC. The first polar body is associated with the formation of the primary oocyte.\nD. Luteinizing Hormone (LH) surge leads to disintegration of the endometrium and onset of menstrual bleeding.\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A and B are true" },
+                        { text: "A and C are true" },
+                        { text: "B and D are true" },
+                        { text: "B and C are true" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "A and B are true. Female meiosis begins in the fetus and pauses, while male meiosis is continuous from puberty. The gap between meiotic divisions is much longer in females (until fertilization) than in males."
+                },
+                {
+                    text: "All living members of the class Cyclostomata are:",
+                    options: [
+                        { text: "Free living" },
+                        { text: "Endoparasite" },
+                        { text: "Symbiotic" },
+                        { text: "Ectoparasite" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Cyclostomes (lampreys and hagfishes) are jawless vertebrates, and most are ectoparasites on other fish."
+                },
+                {
+                    text: "Given below are two statements: one is labelled as Assertion (A) and the other is labelled as Reason (R).\nAssertion (A): The primary function of the Golgi apparatus is to package the materials made by the endoplasmic reticulum and deliver it to intracellular targets and outside the cell.\nReason (R): Vesicles containing materials made by the endoplasmic reticulum fuse with the cis face of the Golgi apparatus, and they are modified and released from the trans face of the Golgi apparatus.\nIn the light of the above statements, choose the correct answer from the options given below:",
+                    options: [
+                        { text: "Both A and R are true and R is the correct explanation of A" },
+                        { text: "Both A and R are true but R is not the correct explanation of A" },
+                        { text: "A is true but R is false" },
+                        { text: "A is false but R is true" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Both assertion and reason are true, and the reason correctly explains the function of the Golgi apparatus in processing and packaging materials from the ER."
+                },
+                {
+                    text: "Match List I with List II.\nList I\nA. Scutellum\nB. Non-albuminous seed\nC. Epiblast\nD. Perisperm\nList II\nI. Persistent nucellus\nII. Cotyledon of Monocot seed\nIII. Groundnut\nIV. Rudimentary cotyledon\nChoose the option with all correct matches.",
+                    options: [
+                        { text: "A-II, B-III, C-IV, D-I" },
+                        { text: "A-IV, B-III, C-II, D-I" },
+                        { text: "A-IV, B-III, C-I, D-II" },
+                        { text: "A-II, B-IV, C-III, D-I" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Scutellum is the cotyledon of monocot seed. Groundnut is a non-albuminous seed. Epiblast is a rudimentary cotyledon. Perisperm is persistent nucellus."
+                },
+                {
+                    text: "Given below are two statements: one is labelled as Assertion (A) and the other is labelled as Reason (R).\nAssertion (A): All vertebrates are chordates but all chordates are not vertebrate.\nReason (R): The members of subphylum vertebrata possess notochord, during the embryonic period, the notochord is replaced by a cartilaginous or bony vertebral column in adults.\nIn the light of the above statements, choose the correct answer from the options given below:",
+                    options: [
+                        { text: "Both A and R are true and R is the correct explanation of A" },
+                        { text: "Both A and R are true but R is not the correct explanation of A" },
+                        { text: "A is true but R is false" },
+                        { text: "A is false but R is true" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Both assertion and reason are true, and the reason correctly explains why all chordates are not vertebrates (because not all replace their notochord with a vertebral column)."
+                },
+                {
+                    text: "Identify the statement that is NOT correct.",
+                    options: [
+                        { text: "Each antibody has two light and two heavy chains." },
+                        { text: "The heavy and light chains are held together by disulfide bonds." },
+                        { text: "Antigen binding site is located at C-terminal region of antibody molecules." },
+                        { text: "Constant region of heavy and light chains are located at C-terminus of antibody molecules." }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The antigen binding site (Fab region) is located at the N-terminal (variable) region of the antibody molecule, not the C-terminal (constant) region."
+                },
+                {
+                    text: "Silencing of specific mRNA is possible via RNAi because of -",
+                    options: [
+                        { text: "Complementary dsRNA" },
+                        { text: "Inhibitory ssRNA" },
+                        { text: "Complementary tRNA" },
+                        { text: "Non-complementary ssRNA" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "RNA interference (RNAi) is mediated by small double-stranded RNA (dsRNA) molecules that lead to the degradation or translational repression of complementary mRNA."
+                },
+                {
+                    text: "Genes R and Y follow independent assortment. If RRYY produce round yellow seeds and rryy produce wrinkled green seeds, what will be the phenotypic ratio of the F2 generation?",
+                    options: [
+                        { text: "Phenotypic ratio - 1 : 2 : 1" },
+                        { text: "Phenotypic ratio - 3 : 1" },
+                        { text: "Phenotypic ratio - 9 : 3 : 3 : 1" },
+                        { text: "Phenotypic ratio - 9 : 7" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "This is a classic dihybrid cross (Mendel's second law), and for two independently assorting genes with complete dominance, the F2 phenotypic ratio is 9:3:3:1."
+                },
+                {
+                    text: "Histones are enriched with -",
+                    options: [
+                        { text: "Lysine & Arginine" },
+                        { text: "Leucine & Lysine" },
+                        { text: "Phenylalanine & Leucine" },
+                        { text: "Phenylalanine & Arginine" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Histones are positively charged proteins rich in basic amino acids like lysine and arginine, which allows them to bind tightly to negatively charged DNA."
+                },
+                {
+                    text: "The first menstruation is called:",
+                    options: [
+                        { text: "Menopause" },
+                        { text: "Menarche" },
+                        { text: "Diapause" },
+                        { text: "Ovulation" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Menarche is the first occurrence of menstruation in a female."
+                },
+                {
+                    text: "Match List - I with List - II.\nList - I\nA. Heart\nB. Kidney\nC. Gastro-intestinal tracts\nD. Adrenal Cortex\nList - II\nI. Erythropoietin\nII. Aldosterone\nIII. Atrial natriuretic factor\nIV. Secretin\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-II, B-I, C-III, D-IV" },
+                        { text: "A-IV, B-III, C-II, D-I" },
+                        { text: "A-I, B-III, C-IV, D-II" },
+                        { text: "A-III, B-I, C-IV, D-II" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Heart produces Atrial Natriuretic Factor (ANF). Kidney produces Erythropoietin. Gastro-intestinal tracts produce Secretin. Adrenal Cortex produces Aldosterone."
+                },
+                {
+                    text: "The protein portion of an enzyme is called:",
+                    options: [
+                        { text: "Cofactor" },
+                        { text: "Coenzyme" },
+                        { text: "Apoenzyme" },
+                        { text: "Prosthetic group" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The protein portion of an enzyme, which requires a cofactor to be active, is called an apoenzyme."
+                },
+                {
+                    text: "Which of the following is the unit of productivity of an Ecosystem?",
+                    options: [
+                        { text: "gm – 2" },
+                        { text: "KCal m – 2" },
+                        { text: "K C al m – 3" },
+                        { text: "KCal m – 2 yr – 1" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Productivity in an ecosystem is typically measured as energy (e.g., KCal) or biomass (e.g., gm) per unit area per unit time, so KCal m^-2 yr^-1 is a correct unit."
+                },
+                {
+                    text: "Sweet potato and potato represent a certain type of evolution. Select the correct combination of terms to explain the evolution.",
+                    options: [
+                        { text: "Analogy, convergent" },
+                        { text: "Homology, divergent" },
+                        { text: "Homology, convergent" },
+                        { text: "Analogy, divergent" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Sweet potato (root modification) and potato (stem modification) have different origins but perform similar functions (food storage). This is an example of analogy and convergent evolution."
+                },
+                {
+                    text: "With the help of given pedigree, find out the probability for the birth of a child having no disease and being a carrier (has the disease mutation in one allele of the gene) in F3 generation.",
+                    options: [
+                        { text: "1/4" },
+                        { text: "1/2" },
+                        { text: "1/8" },
+                        { text: "Zero" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Without the pedigree, a precise calculation is impossible. However, for a typical autosomal recessive disorder, if both parents in F2 are carriers (Aa), the probability of an unaffected carrier (Aa) child in F3 is 1/2. If one parent is AA and the other Aa, it's 1/4. The answer 1/4 suggests a specific scenario in the pedigree."
+                },
+                {
+                    text: "Given below are two statements: one is labelled as Assertion (A) and the other is labelled as Reason (R).\nAssertion (A): Cells of the tapetum possess dense cytoplasm and generally have more than one nucleus.\nReason (R): Presence of more than one nucleus in the tapetum increases the efficiency of nourishing the developing microspore mother cells.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both A and R are true and R is the correct explanation of A" },
+                        { text: "Both A and R are true but R is not the correct explanation of A" },
+                        { text: "A is true but R is false" },
+                        { text: "A is false but R is true" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Assertion (A) is true. Tapetal cells are indeed multinucleate and have dense cytoplasm. Reason (R) is false. The multinucleate condition and dense cytoplasm are adaptations for providing nourishment, but the reason given is not the direct explanation for the multinucleate state."
+                },
+                {
+                    text: "How many meiotic and mitotic divisions need to occur for the development of a mature female gametophyte from the megaspore mother cell in an angiosperm plant?",
+                    options: [
+                        { text: "2 Meiosis and 3 Mitosis" },
+                        { text: "1 Meiosis and 2 Mitosis" },
+                        { text: "1 Meiosis and 3 Mitosis" },
+                        { text: "No Meiosis and 2 Mitosis" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "A megaspore mother cell undergoes one meiotic division to produce four haploid megaspores (usually one functional). The functional megaspore then undergoes three successive mitotic divisions to form an 8-nucleate, 7-celled embryo sac (female gametophyte)."
+                },
+                {
+                    text: "Which of the following is an example of a zygomorphic flower?",
+                    options: [
+                        { text: "Petunia" },
+                        { text: "Datura" },
+                        { text: "Pea" },
+                        { text: "Chilli" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Zygomorphic flowers exhibit bilateral symmetry, meaning they can be divided into two mirror-image halves along only one plane. Pea flowers are zygomorphic."
+                },
+                {
+                    text: "After maturation, in primary lymphoid organs, the lymphocytes migrate for interaction with antigens to secondary lymphoid organ(s)/tissue(s) like:\nA. thymus\nB. bone marrow\nC. spleen\nD. lymph nodes\nE. Peyer's patches\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "B, C, D only" },
+                        { text: "A, B, C only" },
+                        { text: "E, A, B only" },
+                        { text: "C, D, E only" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Primary lymphoid organs (thymus and bone marrow) are where lymphocytes mature. Secondary lymphoid organs (spleen, lymph nodes, Peyer's patches) are where mature lymphocytes interact with antigens."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: Fig fruit is a non-vegetarian fruit as it has enclosed fig wasps in it.\nStatement II: Fig wasp and fig tree exhibit mutual relationship as fig wasp completes its life cycle in fig fruit and fig fruit gets pollinated by fig wasp.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both statement I and statement II are correct" },
+                        { text: "Both statement I and statement II are incorrect" },
+                        { text: "Statement I is correct but statement II is incorrect" },
+                        { text: "Statement I is incorrect but statement II is correct" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Statement I is incorrect: A fruit is defined botanically, and the presence of an insect does not change its classification as a fruit. Statement II is correct: The fig tree and fig wasp have a classic mutualistic relationship where both benefit."
+                },
+                {
+                    text: "What is the main function of the spindle fibers during mitosis?",
+                    options: [
+                        { text: "To separate the chromosomes" },
+                        { text: "To synthesize new DNA" },
+                        { text: "To repair damaged DNA" },
+                        { text: "To regulate cell growth" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Spindle fibers (microtubules) attach to chromosomes and pull them apart to opposite poles of the cell during anaphase of mitosis."
+                },
+                {
+                    text: "Which one of the following is the characteristic feature of gymnosperms?",
+                    options: [
+                        { text: "Seeds are enclosed in fruits." },
+                        { text: "Seeds are naked." },
+                        { text: "Seeds are absent." },
+                        { text: "Gymnosperms have flowers for reproduction." }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The defining characteristic of gymnosperms is that their seeds are 'naked,' meaning they are not enclosed within an ovary (fruit)."
+                },
+                {
+                    text: "Consider the following statements regarding function of adrenal medullary hormones:\nA. It causes pupilary constriction\nB. It is a hyperglycemic hormone\nC. It causes piloerection\nD. It increases/strength of heart contraction\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "C and D Only" },
+                        { text: "B, C and D Only" },
+                        { text: "A, C and D Only" },
+                        { text: "D Only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Adrenal medullary hormones (adrenaline/epinephrine and noradrenaline/norepinephrine) are hyperglycemic (increase blood glucose), cause piloerection (goosebumps), and increase heart rate and strength of contraction. They cause pupillary dilation, not constriction."
+                },
+                {
+                    text: "Why can’t insulin be given orally to diabetic patients?",
+                    options: [
+                        { text: "Human body will elicit strong immune response" },
+                        { text: "It will be digested in Gastro-Intestinal (GI) tract" },
+                        { text: "Because of structural variation" },
+                        { text: "Its bioavailability will be increased" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Insulin is a protein hormone. If taken orally, it would be digested by proteolytic enzymes in the gastrointestinal tract, rendering it inactive before it could reach the bloodstream and exert its effect."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Pteridophyte\nB. Bryophyte\nC. Angiosperm\nD. Gymnosperm\nList-II\nI. Salvia\nII. Ginkgo\nIII. Polytrichum\nIV. Salvinia\nChoose the option with all correct matches.",
+                    options: [
+                        { text: "A-III, B-IV, C-II, D-I" },
+                        { text: "A-IV, B-III, C-I, D-II" },
+                        { text: "A-III, B-IV, C-I, D-II" },
+                        { text: "A-IV, B-III, C-II, D-I" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Salvinia is a pteridophyte. Polytrichum is a bryophyte. Salvia is an angiosperm. Ginkgo is a gymnosperm."
+                },
+                {
+                    text: "Who proposed that the genetic code for amino acids should be made up of three nucleotides?",
+                    options: [
+                        { text: "George Gamow" },
+                        { text: "Francis Crick" },
+                        { text: "Jacque Monod" },
+                        { text: "Franklin Stahl" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "George Gamow, a physicist, first proposed in 1954 that the genetic code must be a triplet code (three nucleotides per amino acid) to account for the 20 amino acids using only 4 bases."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. The Evil Quartet\nB. Ex situ conservation\nC. Lantana camara\nD. Dodo\nList-II\nI. Cryopreservation\nII. Alien species invasion\nIII. Causes of biodiversity losses\nIV. Extinction\nChoose the option with all correct matches.",
+                    options: [
+                        { text: "A-III, B-II, C-I, D-IV" },
+                        { text: "A-III, B-I, C-II, D-IV" },
+                        { text: "A-III, B-IV, C-II, D-I" },
+                        { text: "A-III, B-II, C-IV, D-I" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The Evil Quartet refers to the four major causes of biodiversity losses. Cryopreservation is an ex-situ conservation method. Lantana camara is an alien invasive species. Dodo is an example of extinction."
+                },
+                {
+                    text: "Which of the following hormones released from the pituitary is actually synthesized in the hypothalamus?",
+                    options: [
+                        { text: "Luteinizing hormone (LH)" },
+                        { text: "Anti-diuretic hormone (ADH)" },
+                        { text: "Follicle-stimulating hormone (FSH)" },
+                        { text: "Adenocorticotrophic hormone (ACTH)" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Anti-diuretic hormone (ADH) and oxytocin are synthesized in the hypothalamus and then transported to the posterior pituitary for release."
+                },
+                {
+                    text: "Role of the water vascular system in Echinoderms is:\nA. Respiration and Locomotion\nB. Excretion and Locomotion\nC. Capture and transport of food\nD. Digestion and Respiration\nE. Digestion and Excretion\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A and B Only" },
+                        { text: "A and C Only" },
+                        { text: "B and C Only" },
+                        { text: "B, D and E Only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The water vascular system in echinoderms is primarily involved in locomotion, capture and transport of food, and respiration."
+                },
+                {
+                    text: "Which of the following type of immunity is present at the time of birth and is a non-specific type of defence in the human body?",
+                    options: [
+                        { text: "Acquired Immunity" },
+                        { text: "Innate Immunity" },
+                        { text: "Cell-mediated Immunity" },
+                        { text: "Humoral Immunity" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Innate immunity is the non-specific defense system that is present from birth and provides immediate protection against pathogens."
+                },
+                {
+                    text: "In bryophytes, the gemmae help in which one of the following?",
+                    options: [
+                        { text: "Sexual reproduction" },
+                        { text: "Asexual reproduction" },
+                        { text: "Nutrient absorption" },
+                        { text: "Gaseous exchange" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Gemmae are small, multicellular, green, asexual buds that develop in gemma cups on the thalli of some bryophytes (e.g., Marchantia) and detach to form new plants."
+                },
+                {
+                    text: "In frog, the Renal portal system is a special venous connection that acts to link :",
+                    options: [
+                        { text: "Liver and intestine" },
+                        { text: "Liver and kidney" },
+                        { text: "Kidney and intestine" },
+                        { text: "Kidney and lower part of body" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "The renal portal system in frogs carries blood from the posterior parts of the body (including hind limbs) to the kidneys before it returns to the heart."
+                },
+                {
+                    text: "Given below are two statements:\nStatement I: In ecosystem, there is unidirectional flow of energy of sun from producers to consumers.\nStatement II: Ecosystems are exempted from 2nd law of thermodynamics.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both Statement I and Statement II are correct" },
+                        { text: "Both Statement I and Statement II are incorrect" },
+                        { text: "Statement I is correct but Statement II is incorrect" },
+                        { text: "Statement I is incorrect but Statement II is correct" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Statement I is correct: Energy flow in an ecosystem is unidirectional. Statement II is incorrect: Ecosystems are open systems and obey the second law of thermodynamics, meaning energy is lost as heat at each trophic level."
+                },
+                {
+                    text: "Which of the following statements about RuBisCO is true?",
+                    options: [
+                        { text: "It is active only in the dark." },
+                        { text: "It has higher affinity for oxygen than carbon dioxide." },
+                        { text: "It is an enzyme involved in the photolysis of water." },
+                        { text: "It catalyzes the carboxylation of RuBP." }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "RuBisCO (Ribulose-1,5-bisphosphate carboxylase/oxygenase) catalyzes the carboxylation of RuBP in the Calvin cycle, which is the first step of carbon fixation in photosynthesis."
+                },
+                {
+                    text: "Which of the following enzyme(s) are NOT essential for gene cloning?\nA. Restriction enzymes\nB. DNA ligase\nC. DNA mutase\nD. DNA recombinase\nE. DNA polymerase\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "C and D only" },
+                        { text: "A and B only" },
+                        { text: "D and E only" },
+                        { text: "B and C only" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Restriction enzymes, DNA ligase, and DNA polymerase are essential for gene cloning. DNA mutase and DNA recombinase are not typically essential for standard gene cloning procedures."
+                },
+                {
+                    text: "Read the following statements on plant growth and development.\nA. Parthenocarpy can be induced by auxins.\nB. Plant growth regulators can be involved in promotion as well as inhibition of growth.\nC. Dedifferentiation is a pre-requisite for re-differentiation.\nD. Abscisic acid is a plant growth promoter.\nE. Apical dominance promotes the growth of lateral buds.\nChoose the option with all correct statements.",
+                    options: [
+                        { text: "A, B, C only" },
+                        { text: "A, C, E only" },
+                        { text: "A, D, E only" },
+                        { text: "B, D, E only" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "A, B, and C are correct. Parthenocarpy can be induced by auxins. Plant growth regulators can promote or inhibit growth. Dedifferentiation precedes redifferentiation. D is incorrect as Abscisic acid is a growth inhibitor. E is incorrect as apical dominance inhibits lateral bud growth."
+                },
+                {
+                    text: "Which factor is important for termination of transcription?",
+                    options: [
+                        { text: "\\(\\alpha\\) (alpha)" },
+                        { text: "\\(\\sigma\\) (sigma)" },
+                        { text: "\\(\\rho\\) (rho)" },
+                        { text: "\\(\\gamma\\) (gamma)" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "The rho (\\(\\rho\\)) factor is a protein that aids in the termination of transcription in prokaryotes."
+                },
+                {
+                    text: "Frogs respire in water by skin and buccal cavity and on land by skin, buccal cavity and lungs. Choose the correct answer from the following :",
+                    options: [
+                        { text: "The statement is true for water but false for land" },
+                        { text: "The statement is true for both the environment" },
+                        { text: "The statement is false for water but true for land" },
+                        { text: "The statement is false for both the environment" }
+                    ],
+                    correctAnswer: "C",
+                    explanation: "Frogs respire through their skin and buccal cavity in water. On land, they respire through skin, buccal cavity, and lungs. So, the statement is false for water (as it mentions lungs for water respiration) but true for land."
+                },
+                {
+                    text: "Twins are born to a family that lives next door to you. The twins are a boy and a girl. Which of the following must be true?",
+                    options: [
+                        { text: "They are monozygotic twins." },
+                        { text: "They are fraternal twins." },
+                        { text: "They were conceived through in vitro fertilization." },
+                        { text: "They have 75% identical genetic content." }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "If twins are a boy and a girl, they must be fraternal (dizygotic) twins, originating from two separate fertilized eggs. Monozygotic (identical) twins develop from a single fertilized egg and are always of the same sex."
+                },
+                {
+                    text: "Which of the following microbes is NOT involved in the preparation of household products?\nA. Aspergillus niger\nB. Lactobacillus\nC. Trichoderma polysporum\nD. Saccharomyces cerevisiae\nE. Propionibacterium sharmanii\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A and B only" },
+                        { text: "A and C only" },
+                        { text: "C and D only" },
+                        { text: "C and E only" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "Aspergillus niger is used for citric acid production (industrial, not household). Trichoderma polysporum produces cyclosporin A (immunosuppressant). Lactobacillus is used for curd. Saccharomyces cerevisiae for bread/alcohol. Propionibacterium sharmanii for Swiss cheese. So, A and C are not typically household products."
+                },
+                {
+                    text: "Match List-I with List-II.\nList-I\nA. Progesterone\nB. Relaxin\nC. Melanocyte stimulating hormone\nD. Catecholamines\nList-II\nI. Pars intermedia\nII. Ovary\nIII. Adrenal Medulla\nIV. Corpus luteum\nChoose the correct answer from the options given below:",
+                    options: [
+                        { text: "A-IV, B-II, C-I, D-III" },
+                        { text: "A-IV, B-II, C-III, D-I" },
+                        { text: "A-II, B-IV, C-I, D-III" },
+                        { text: "A-III, B-II, C-IV, D-I" }
+                    ],
+                    correctAnswer: "A",
+                    explanation: "Progesterone is secreted by the corpus luteum. Relaxin is secreted by the ovary (and placenta). Melanocyte stimulating hormone (MSH) is from pars intermedia of pituitary. Catecholamines (adrenaline, noradrenaline) are from adrenal medulla."
+                },
+                {
+                    text: "The blue and white selectable markers have been developed which differentiate recombinant colonies from non-recombinant colonies on the basis of their ability to produce colour in the presence of a chromogenic substrate.\nGiven below are two statements about this method:\nStatement I: The blue coloured colonies have DNA insert in the plasmid and they are identified as recombinant colonies.\nStatement II: The colonies without blue colour have DNA insert in the plasmid and are identified as recombinant colonies.\nIn the light of the above statements, choose the most appropriate answer from the options given below:",
+                    options: [
+                        { text: "Both Statement I and Statement II are correct" },
+                        { text: "Both Statement I and Statement II are incorrect" },
+                        { text: "Statement I is correct but Statement II is incorrect" },
+                        { text: "Statement I is incorrect but Statement II is correct" }
+                    ],
+                    correctAnswer: "D",
+                    explanation: "Statement I is incorrect: Blue colonies indicate non-recombinant plasmids (intact lacZ gene). Statement II is correct: White colonies indicate recombinant plasmids (lacZ gene disrupted by insert)."
+                },
+                {
+                    text: "Which one of the following equations represents the Verhulst-Pearl Logistic Growth of population?",
+                    options: [
+                        { text: "dN/dt = r(K-N)/K" },
+                        { text: "dN/dt = rN(K-N)/K" },
+                        { text: "dN/dt = rN(N-K)/N" },
+                        { text: "dN/dt = r(K-N)/K" }
+                    ],
+                    correctAnswer: "B",
+                    explanation: "The Verhulst-Pearl Logistic Growth model is given by dN/dt = rN((K-N)/K), where N is population size, r is intrinsic rate of natural increase, and K is carrying capacity."
+                }
+            ];
+            
+            const questions = [];
+            for (let i = 0; i < numQuestions; i++) {
+                const qIndex = i % biologyQuestions.length;
+                const question = JSON.parse(JSON.stringify(biologyQuestions[qIndex]));
+                
+                // Optionally, randomize options order for each question instance
+                for (let j = question.options.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [question.options[j], question.options[k]] = [question.options[k], question.options[j]];
+                }
+
+                // Re-assign correct answer letter based on new order
+                const originalCorrectText = biologyQuestions[qIndex].options[
+                    biologyQuestions[qIndex].correctAnswer.charCodeAt(0) - 65
+                ].text;
+                question.correctAnswer = String.fromCharCode(
+                    65 + question.options.findIndex(opt => opt.text === originalCorrectText)
+                );
+
+                questions.push(question);
+            }
+            
+            return questions;
+        }
+
+        // Test control functions
+        function startTest() {
+            examState.questions = generateBiologyQuestions(180); // Generate 180 biology questions
+            
+            if (examState.questions.length === 0) {
+                alert('Failed to generate questions. Please try again.');
+                return;
+            }
+            
+            examState.examStarted = true;
+            examState.currentQuestionIndex = 0;
+            examState.userAnswers = {};
+            examState.markedQuestions.clear();
+            examState.timeLeft = 180 * 60; // Reset timer for 3 hours
+            examState.examEnded = false; // Reset exam ended flag
+            
+            // Hide instructions and show exam panels
+            elements.instructionsPanel.classList.add('hidden');
+            elements.questionArea.classList.remove('hidden');
+            elements.reviewPanel.classList.remove('hidden');
+            
+            // Show first question
+            showQuestion(0);
+            updateQuestionStats();
+            
+            // Start timer
+            startTimer();
+            
+            // Update UI for test mode
+            elements.pauseBtn.classList.remove('hidden');
+            elements.submitTest.classList.add('hidden'); // Ensure submit button is hidden until last question
+            
+            // Initialize question navigation grid
+            elements.questionGrid.innerHTML = '';
+            for (let i = 0; i < examState.questions.length; i++) {
+                const questionBtn = document.createElement('button');
+                questionBtn.className = 'w-full py-1 rounded-md text-sm bg-gray-100 text-gray-800';
+                questionBtn.textContent = i + 1;
+                questionBtn.addEventListener('click', () => showQuestion(i));
+                elements.questionGrid.appendChild(questionBtn);
+            }
+        }
+
+        function submitTest() {
+            clearInterval(examState.timer);
+            examState.examEnded = true; // Set flag that exam has ended
+            
+            // Calculate results
+            const totalQuestions = examState.questions.length;
+            const attempted = Object.keys(examState.userAnswers).length;
+            
+            let correct = 0;
+            examState.questions.forEach((question, index) => {
+                if (examState.userAnswers[index] === question.correctAnswer) {
+                    correct++;
+                }
+            });
+            
+            const wrong = attempted - correct;
+            const score = (correct * 4) - (wrong * 1);
+            
+            // Update results modal
+            elements.totalScore.textContent = score;
+            elements.correctAnswers.textContent = correct;
+            elements.resultsTotal.textContent = totalQuestions;
+            elements.resultsCorrect.textContent = correct;
+            elements.resultsAttempted.textContent = attempted;
+            elements.resultsWrong.textContent = wrong;
+            elements.resultsMarked.textContent = examState.markedQuestions.size;
+            
+            // Format time taken
+            const timeTaken = (180 * 60) - examState.timeLeft;
+            const hours = Math.floor(timeTaken / 3600);
+            const minutes = Math.floor((timeTaken % 3600) / 60);
+            const seconds = timeTaken % 60;
+            elements.resultsTime.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Show results modal
+            elements.resultsModal.classList.remove('hidden');
+
+            // Re-render current question to show correct/wrong answers
+            showQuestion(examState.currentQuestionIndex);
+        }
+
+        function closeResults() {
+            elements.resultsModal.classList.add('hidden');
+            
+            // Return to instructions screen
+            elements.instructionsPanel.classList.remove('hidden');
+            elements.questionArea.classList.add('hidden');
+            elements.reviewPanel.classList.add('hidden');
+            
+            // Reset exam state
+            examState.examStarted = false;
+            examState.questions = [];
+            examState.currentQuestionIndex = 0;
+            examState.userAnswers = {};
+            examState.markedQuestions.clear();
+            examState.timeLeft = 180 * 60;
+            examState.examEnded = false;
+
+            // Reset timer display
+            elements.timer.querySelector('span').textContent = '03:00:00';
+        }
+
+        function downloadResults() {
+            alert('In a real implementation, this would generate and download a PDF report with the test results.');
+            // Here you would typically:
+            // 1. Create a PDF using libraries like jsPDF or pdf-lib
+            // 2. Include all the test results
+            // 3. Generate a download link
+        }
+
+        // Initialize the app
+        function init() {
+            updateTimer(); // Show initial timer value
+            // Initially hide question area and review panel
+            elements.questionArea.classList.add('hidden');
+            elements.reviewPanel.classList.add('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>
